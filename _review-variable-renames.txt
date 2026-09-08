@@ -1,0 +1,261 @@
+# Variable label renames - REVIEW AND EDIT ME
+#
+# Format:  RAW_ENV_VAR -> Proposed Label
+# Edit the right-hand side to change a label.
+# Delete a whole line (or comment it with #) to leave that variable untouched.
+# Target is never changed - only the Name shown in the Unraid UI.
+# 'Var NN:' prefixes are preserved; only the raw tail is replaced.
+#
+# 250 distinct raw names, 713 Configs affected.
+# PUID/PGID/UMASK/UID/GID/TZ/GUID are excluded by request.
+
+ADMIN_TOKEN                     -> Admin Token                        # 3 uses
+ALLOWED_HOSTS                   -> Allowed Hosts                      # 1 use
+ALLOW_SIGNUP                    -> Allow Signup                       # 1 use
+APPRISE                         -> Apprise                            # 1 use
+APPRISE_ATTACH_SIZE             -> Apprise Attach Size                # 1 use
+APPRISE_ENABLED                 -> Apprise Enabled                    # 1 use
+AUTOPAUSE                       -> Auto Pause                         # 1 use
+AUTO_GENERATE_CORRESPONDENTS    -> Auto Generate Correspondents       # 1 use
+AUTO_GENERATE_CREATED_DATE      -> Auto Generate Created Date         # 1 use
+AUTO_GENERATE_TAGS              -> Auto Generate Tags                 # 1 use
+AUTO_GENERATE_TITLE             -> Auto Generate Title                # 1 use
+AUTO_OCR_TAG                    -> Auto OCR Tag                       # 1 use
+AUTO_TAG                        -> Auto Tag                           # 1 use
+AZURE_DOCAI_ENDPOINT            -> Azure DocAI Endpoint               # 1 use
+AZURE_DOCAI_KEY                 -> Azure DocAI Key                    # 1 use
+AZURE_DOCAI_MODEL_ID            -> Azure DocAI Model ID               # 1 use
+AZURE_DOCAI_TIMEOUT_SECONDS     -> Azure DocAI Timeout Seconds        # 1 use
+BASE_URL                        -> Base URL                           # 1 use
+BIND_CLOUD_NAME                 -> Bind Cloud Name                    # 1 use
+CELERY_BROKER_URL               -> Celery Broker URL                  # 1 use
+CERT_KEY_PATH                   -> Cert Key Path                      # 1 use
+CERT_PATH                       -> Cert Path                          # 1 use
+CF_APIKEY                       -> CF API Key                         # 1 use
+CF_APITOKEN                     -> CF API Token                       # 1 use
+CF_APITOKEN_ZONE                -> CF API Token Zone                  # 1 use
+CF_HOSTS                        -> CF Hosts                           # 1 use
+CF_RECORDTYPES                  -> CF Record Types                    # 1 use
+CF_USER                         -> CF User                            # 1 use
+CF_ZONES                        -> CF Zones                           # 1 use
+CHROME_CLI                      -> Chrome CLI                         # 1 use
+CHROME_REFRESH_TIME             -> Chrome Refresh Time                # 1 use
+CLI_ARGS                        -> CLI Args                           # 1 use
+CONNECTION_TIMEOUT              -> Connection Timeout                 # 1 use
+CONSISTENCY_MODE                -> Consistency Mode                   # 2 uses
+CORRESPONDENT_BLACK_LIST        -> Correspondent Black List           # 1 use
+CORS_ALLOW_ORIGIN               -> CORS Allow Origin                  # 1 use
+COUCHDB_PASSWORD                -> CouchDB Password                   # 1 use
+COUCHDB_USER                    -> CouchDB User                       # 1 use
+CREATE_BACKUP_HOURS             -> Create Backup Hours                # 2 uses
+CSRF_TRUSTED_ORIGINS            -> CSRF Trusted Origins               # 1 use
+CUSTOM_JAR_PATH                 -> Custom Jar Path                    # 1 use
+DATABASE_URL                    -> Database URL                       # 1 use
+DATA_PERM                       -> Data Perm                          # 2 uses
+DEBUG                           -> Debug                              # 2 uses
+DEFAULT_BLOCK_ADS               -> Default Block Ads                  # 1 use
+DEFAULT_EMAIL                   -> Default Email                      # 1 use
+DEFAULT_FROM_EMAIL              -> Default From Email                 # 1 use
+DEFAULT_GROUP                   -> Default Group                      # 1 use
+DEFAULT_STEALTH                 -> Default Stealth                    # 1 use
+DETECTION_MODE                  -> Detection Mode                     # 1 use
+DISPATCHARR_ENV                 -> Dispatcharr Env                    # 1 use
+DISPATCHARR_LOG_LEVEL           -> Dispatcharr Log Level              # 1 use
+EMAIL_HOST                      -> Email Host                         # 1 use
+EMAIL_HOST_PASSWORD             -> Email Host Password                # 1 use
+EMAIL_HOST_USER                 -> Email Host User                    # 1 use
+EMAIL_PORT                      -> Email Port                         # 1 use
+EMAIL_USE_TLS                   -> Email Use TLS                      # 1 use
+ENABLE_ADMIN_ANALYTICS          -> Enable Admin Analytics             # 1 use
+ENABLE_ADMIN_CHAT_ACCESS        -> Enable Admin Chat Access           # 1 use
+ENABLE_CHANNELS                 -> Enable Channels                    # 1 use
+ENABLE_COMMUNITY_SHARING        -> Enable Community Sharing           # 1 use
+ENABLE_DEBUGGER                 -> Enable Debugger                    # 1 use
+ENABLE_EASTER_EGGS              -> Enable Easter Eggs                 # 1 use
+ENABLE_EVALUATION_ARENA_MODELS  -> Enable Evaluation Arena Models     # 1 use
+ENABLE_FOLDERS                  -> Enable Folders                     # 1 use
+ENABLE_MEMORIES                 -> Enable Memories                    # 1 use
+ENABLE_MESSAGE_RATING           -> Enable Message Rating              # 1 use
+ENABLE_NOTES                    -> Enable Notes                       # 1 use
+ENABLE_OLLAMA_API               -> Enable Ollama API                  # 1 use
+ENABLE_OPENAI_API               -> Enable OpenAI API                  # 1 use
+ENABLE_STARTUP_SCRIPTS          -> Enable Startup Scripts             # 2 uses
+ENABLE_WEBUI_AUTH               -> Enable WebUI Auth                  # 2 uses
+ENABLE_WEBUI_CONSOLE            -> Enable WebUI Console               # 2 uses
+EULA                            -> EULA                               # 1 use
+FILEBROWSER_CONFIG              -> FileBrowser Config                 # 1 use
+GAME_ID                         -> Game ID                            # 8 uses
+GAME_NAME                       -> Game Name                          # 2 uses
+GAME_PARAMS                     -> Game Params                        # 5 uses
+GAME_PORT                       -> Game Port                          # 3 uses
+GATEWAY                         -> Gateway                            # 2 uses
+GLOBAL_LOG_LEVEL                -> Global Log Level                   # 1 use
+GOOGLE_APPLICATION_CREDENTIALS  -> Google Application Credentials     # 1 use
+GOOGLE_LOCATION                 -> Google Location                    # 1 use
+GOOGLE_PROCESSOR_ID             -> Google Processor ID                # 1 use
+GOOGLE_PROJECT_ID               -> Google Project ID                  # 1 use
+GROUP_ID                        -> Group ID                           # 1 use
+HTTPS_PROXY                     -> HTTPS Proxy                        # 2 uses
+HTTP_PROXY                      -> HTTP Proxy                         # 2 uses
+INTEGRATIONS_ALLOW_PRIVATE_IPS  -> Integrations Allow Private IPs     # 1 use
+INTERVAL                        -> Interval                           # 1 use
+INVITATIONS_ALLOWED             -> Invitations Allowed                # 1 use
+JAVA_CUSTOM_ARGS                -> Java Custom Args                   # 1 use
+JAVA_INITIAL_HEAP_SIZE          -> Java Initial Heap Size             # 1 use
+JAVA_MAX_HEAP_SIZE              -> Java Max Heap Size                 # 1 use
+JAVA_MAX_THREADS                -> Java Max Threads                   # 1 use
+JAVA_VERSION                    -> Java Version                       # 1 use
+JVM_OPTS                        -> JVM Opts                           # 1 use
+LLM_LANGUAGE                    -> LLM Language                       # 1 use
+LLM_MODEL                       -> LLM Model                          # 1 use
+LLM_PROVIDER                    -> LLM Provider                       # 1 use
+LOCAL_ONLY                      -> Local Only                         # 2 uses
+LOG_LEVEL                       -> Log Level                          # 3 uses
+MANUAL_TAG                      -> Manual Tag                         # 1 use
+MAXPLAYERS                      -> Max Players                        # 1 use
+MAX_CONCURRENT_SESSIONS         -> Max Concurrent Sessions            # 1 use
+MAX_STREAMS                     -> Max Streams                        # 1 use
+MAX_WORKERS                     -> Max Workers                        # 1 use
+METRICS_ENABLED                 -> Metrics Enabled                    # 1 use
+MODE                            -> Mode                               # 1 use
+MOTD                            -> MOTD                               # 1 use
+MYSQL_DATABASE                  -> MySQL Database                     # 1 use
+MYSQL_USER                      -> MySQL User                         # 1 use
+NODE_IP                         -> Node IP                            # 1 use
+NO_PROXY                        -> No Proxy                           # 2 uses
+NO_STREAMING                    -> No Streaming                       # 1 use
+NVIDIA_DRIVER_CAPABILITIES      -> NVIDIA Driver Capabilities         # 1 use
+NVIDIA_VISIBLE_DEVICES          -> NVIDIA Visible Devices             # 1 use
+OAUTH2_PROXY_CLIENT_ID          -> OAuth2 Proxy Client ID             # 1 use
+OAUTH2_PROXY_CLIENT_SECRET      -> OAuth2 Proxy Client Secret         # 1 use
+OAUTH2_PROXY_COOKIE_SECRET      -> OAuth2 Proxy Cookie Secret         # 1 use
+OAUTH2_PROXY_EMAIL_DOMAINS      -> OAuth2 Proxy Email Domains         # 1 use
+OAUTH2_PROXY_OIDC_ISSUER_URL    -> OAuth2 Proxy OIDC Issuer URL       # 1 use
+OAUTH2_PROXY_PROVIDER           -> OAuth2 Proxy Provider              # 1 use
+OAUTH2_PROXY_REDIRECT_URL       -> OAuth2 Proxy Redirect URL          # 1 use
+OAUTH2_PROXY_UPSTREAMS          -> OAuth2 Proxy Upstreams             # 1 use
+OCR_LIMIT_PAGES                 -> OCR Limit Pages                    # 1 use
+OCR_PROVIDER                    -> OCR Provider                       # 1 use
+OIDC_CLIENT_SECRET              -> OIDC Client Secret                 # 1 use
+OIDC_SIGNING_KEY_PATH           -> OIDC Signing Key Path              # 1 use
+OLLAMA_BASE_URL                 -> Ollama Base URL                    # 1 use
+OLLAMA_CONTEXT_LENGTH           -> Ollama Context Length              # 1 use
+OLLAMA_DEBUG                    -> Ollama Debug                       # 1 use
+OLLAMA_FLASH_ATTENTION          -> Ollama Flash Attention             # 1 use
+OLLAMA_GPU_OVERHEAD             -> Ollama GPU Overhead                # 1 use
+OLLAMA_HOST                     -> Ollama Host                        # 2 uses
+OLLAMA_KEEP_ALIVE               -> Ollama Keep Alive                  # 1 use
+OLLAMA_KV_CACHE_TYPE            -> Ollama KV Cache Type               # 1 use
+OLLAMA_LOAD_TIMEOUT             -> Ollama Load Timeout                # 1 use
+OLLAMA_MAX_LOADED_MODELS        -> Ollama Max Loaded Models           # 1 use
+OLLAMA_MAX_QUEUE                -> Ollama Max Queue                   # 1 use
+OLLAMA_MODELS                   -> Ollama Models                      # 1 use
+OLLAMA_MULTIUSER_CACHE          -> Ollama Multi-User Cache            # 1 use
+OLLAMA_NEW_ENGINE               -> Ollama New Engine                  # 1 use
+OLLAMA_NOHISTORY                -> Ollama No History                  # 1 use
+OLLAMA_NOPRUNE                  -> Ollama No Prune                    # 1 use
+OLLAMA_NUM_PARALLEL             -> Ollama Num Parallel                # 1 use
+OLLAMA_ORIGINS                  -> Ollama Origins                     # 3 uses
+OLLAMA_SCHED_SPREAD             -> Ollama Sched Spread                # 1 use
+OLLAMA_VULKAN                   -> Ollama Vulkan                      # 1 use
+OPENAI_API_BASE_URL             -> OpenAI API Base URL                # 1 use
+OPENAI_API_KEY                  -> OpenAI API Key                     # 2 uses
+OPENAI_BASE_URL                 -> OpenAI Base URL                    # 1 use
+OPS                             -> OPS                                # 1 use
+PAPERLESS_API_TOKEN             -> Paperless API Token                # 1 use
+PAPERLESS_BASE_URL              -> Paperless Base URL                 # 1 use
+PAPERLESS_CONSUMER_POLLING      -> Paperless Consumer Polling         # 1 use
+PAPERLESS_DBNAME                -> Paperless DB Name                  # 1 use
+PAPERLESS_IGNORE_DATES          -> Paperless Ignore Dates             # 1 use
+PAPERLESS_PUBLIC_URL            -> Paperless Public URL               # 1 use
+PAPERLESS_SECRET_KEY            -> Paperless Secret Key               # 1 use
+PASSWORD                        -> Password                           # 1 use
+PING_EMAIL_DOMAIN               -> Ping Email Domain                  # 1 use
+PIPER_LENGTH                    -> Piper Length                       # 1 use
+PIPER_NOISE                     -> Piper Noise                        # 1 use
+PIPER_NOISEW                    -> Piper NoiseW                       # 1 use
+PIPER_SPEAKER                   -> Piper Speaker                      # 1 use
+PIPER_VOICE                     -> Piper Voice                        # 1 use
+POSTGRES_DB                     -> Postgres DB                        # 3 uses
+POSTGRES_PASSWORD               -> Postgres Password                  # 2 uses
+POSTGRES_PORT                   -> Postgres Port                      # 1 use
+POSTGRES_SERVER                 -> Postgres Server                    # 1 use
+POSTGRES_TUNE                   -> Postgres Tune                      # 1 use
+POSTGRES_USER                   -> Postgres User                      # 2 uses
+PREBOOT_CHROME                  -> Preboot Chrome                     # 1 use
+PRIVOXY_ENABLED                 -> Privoxy Enabled                    # 27 uses
+PURGE_BACKUP_DAYS               -> Purge Backup Days                  # 2 uses
+REDIS_HOST                      -> Redis Host                         # 1 use
+REMOTE_SQL                      -> Remote SQL                         # 1 use
+REPLICATION_FACTOR              -> Replication Factor                 # 2 uses
+RPC_SECRET                      -> RPC Secret                         # 2 uses
+RP_ID                           -> Rp ID                              # 1 use
+SCREEN_DEPTH                    -> Screen Depth                       # 1 use
+SCREEN_HEIGHT                   -> Screen Height                      # 1 use
+SCREEN_WIDTH                    -> Screen Width                       # 1 use
+SECRET_KEY                      -> Secret Key                         # 1 use
+SELF_SIGNED_CERT                -> Self Signed Cert                   # 1 use
+SETTINGS_ENCRYPTION_KEY         -> Settings Encryption Key            # 1 use
+SHARED_NETWORK                  -> Shared Network                     # 4 uses
+SIGNUPS_ALLOWED                 -> Signups Allowed                    # 1 use
+SILO_PLUGIN_CACHE_DIR           -> Silo Plugin Cache Dir              # 1 use
+SITE_LOGO_URL                   -> Site Logo URL                      # 1 use
+SITE_NAME                       -> Site Name                          # 1 use
+SITE_ROOT                       -> Site Root                          # 1 use
+SMTP_FROM_EMAIL                 -> SMTP From Email                    # 1 use
+SMTP_HOST                       -> SMTP Host                          # 1 use
+SMTP_PASSWORD                   -> SMTP Password                      # 1 use
+SMTP_USER                       -> SMTP User                          # 1 use
+STARTUP_CMD                     -> Startup Cmd                        # 2 uses
+SUPERUSER_EMAIL                 -> Superuser Email                    # 1 use
+SUPERUSER_PASSWORD              -> Superuser Password                 # 1 use
+SYSTEM_CONNECTIONTIMEOUTMINUTES -> System Connection Timeout Minutes  # 1 use
+SYSTEM_DEFAULT_LOCALE           -> System Default Locale              # 1 use
+SYSTEM_GOOGLEVISIBILITY         -> System Google Visibility           # 1 use
+SYSTEM_ROOT_URI_PATH            -> System Root URI Path               # 1 use
+TAILSCALE_FORCE_PORT            -> Tailscale Force Port               # 1 use
+TAILSCALE_UDP_PORT              -> Tailscale UDP Port                 # 1 use
+TOKEN_LIMIT                     -> Token Limit                        # 1 use
+TRUSTED_NETWORKS                -> Trusted Networks                   # 1 use
+TRUSTED_PROXIES                 -> Trusted Proxies                    # 1 use
+TSSERVER_DEFAULT_PORT           -> TSServer Default Port              # 1 use
+TSSERVER_FILE_TRANSFER_PORT     -> TSServer File Transfer Port        # 1 use
+TSSERVER_LICENSE_ACCEPTED       -> TSServer License Accepted          # 1 use
+TSSERVER_QUERY_HTTP_ENABLED     -> TSServer Query HTTP Enabled        # 1 use
+TSSERVER_QUERY_HTTP_PORT        -> TSServer Query HTTP Port           # 1 use
+TS_AUTHKEY                      -> TS Authkey                         # 1 use
+TS_HOSTNAME                     -> TS Hostname                        # 1 use
+UNBOUND_ENABLED                 -> Unbound Enabled                    # 27 uses
+UNBOUND_NAMESERVERS             -> Unbound Nameservers                # 1 use
+USER_ID                         -> User ID                            # 1 use
+VISION_LLM_MODEL                -> Vision LLM Model                   # 1 use
+VISION_LLM_PROVIDER             -> Vision LLM Provider                # 1 use
+VNC_PASSWORD                    -> VNC Password                       # 1 use
+VPN_AUTO_PORT_FORWARD           -> VPN Auto Port Forward              # 27 uses
+VPN_AUTO_PORT_FORWARD_TO_PORTS  -> VPN Auto Port Forward To Ports     # 27 uses
+VPN_CONF                        -> VPN Conf                           # 27 uses
+VPN_ENABLED                     -> VPN Enabled                        # 27 uses
+VPN_EXPOSE_PORTS_ON_LAN         -> VPN Expose Ports On LAN            # 27 uses
+VPN_FIREWALL_TYPE               -> VPN Firewall Type                  # 27 uses
+VPN_HEALTHCHECK_ENABLED         -> VPN Healthcheck Enabled            # 1 use
+VPN_KEEP_LOCAL_DNS              -> VPN Keep Local DNS                 # 26 uses
+VPN_LAN_LEAK_ENABLED            -> VPN LAN Leak Enabled               # 1 use
+VPN_LAN_NETWORK                 -> VPN LAN Network                    # 27 uses
+VPN_NAMESERVERS                 -> VPN Nameservers                    # 1 use
+VPN_PIA_DIP_TOKEN               -> VPN PIA DIP Token                  # 27 uses
+VPN_PIA_PASS                    -> VPN PIA Pass                       # 27 uses
+VPN_PIA_PORT_FORWARD_PERSIST    -> VPN PIA Port Forward Persist       # 27 uses
+VPN_PIA_PREFERRED_REGION        -> VPN PIA Preferred Region           # 27 uses
+VPN_PIA_USER                    -> VPN PIA User                       # 27 uses
+VPN_PROVIDER                    -> VPN Provider                       # 27 uses
+WEBPAGE_TITLE                   -> Webpage Title                      # 1 use
+WEBSOCKET_ENABLED               -> WebSocket Enabled                  # 1 use
+WEBUI_AUTH                      -> WebUI Auth                         # 1 use
+WEBUI_CONSOLE_TITLE             -> WebUI Console Title                # 2 uses
+WEBUI_PASS                      -> WebUI Pass                         # 2 uses
+WEBUI_SECRET_KEY                -> WebUI Secret Key                   # 1 use
+WEBUI_USER                      -> WebUI User                         # 2 uses
+WEB_CONCURRENCY                 -> Web Concurrency                    # 1 use
+WHISPER_BEAM                    -> Whisper Beam                       # 1 use
+WHISPER_LANG                    -> Whisper Lang                       # 1 use
+WHISPER_MODEL                   -> Whisper Model                      # 1 use
