@@ -21,6 +21,8 @@ Structure
     Required, Mask.
   * <DateInstalled> and <MyMAC> dropped. <MyIP> kept.
   * <Overview> whitespace collapsed (stray carriage returns, blank-line runs).
+  * Elements with children or attributes (v1-style <Networking>, <Environment>,
+    <Data>) are kept verbatim rather than flattened to their text.
 
 Config blocks
   * Re-ordered: Ports, Paths, Devices, Variables, Labels, then
@@ -55,7 +57,7 @@ Attributes
 
 The source directory is only ever read. Re-running is idempotent.
 """
-import glob, os, re, sys, json
+import copy, glob, os, re, sys, json
 import xml.etree.ElementTree as ET
 from collections import defaultdict
 
@@ -81,12 +83,13 @@ def load_labels():
                                            '_review-variable-renames.txt')]):
         if os.path.isfile(cand):
             m = {}
-            for line in open(cand, encoding='utf-8'):
-                line = line.strip()
-                if not line or line.startswith('#') or '->' not in line:
-                    continue
-                raw, label = line.split('->', 1)
-                m[raw.strip()] = label.split('#')[0].strip()
+            with open(cand, encoding='utf-8') as f:
+                for line in f:
+                    line = line.strip()
+                    if not line or line.startswith('#') or '->' not in line:
+                        continue
+                    raw, label = line.split('->', 1)
+                    m[raw.strip()] = label.split('#')[0].strip()
             return {k: v for k, v in m.items() if k and v}
     return {}
 LABELS = load_labels()
@@ -158,7 +161,7 @@ def smart_title(s):
 # ---------- name parsing for Paths / Ports ----------
 PREFIX_RE = re.compile(
     r'^\s*(?:container\s+)?(?:host\s+)?(?:path|port)\s*'
-    r'(?P<maj>\d+)?(?:\.(?P<min>\d+))?\s*[:.\-]?\s*(?P<rest>.*)$', re.I)
+    r'(?P<maj>\d+(?![A-Za-z]))?(?:\.(?P<min>\d+(?![A-Za-z])))?\s*[:.\-]?\s*(?P<rest>.*)$', re.I)
 
 def parse_pathport(name, target, ctype):
     m = PREFIX_RE.match(name or '')
@@ -218,24 +221,20 @@ def group_key(name):
 # bridge, brilliant, "cbr/cbz", the "br0" bridge interface, and even a Pangolin CDN URL
 # containing "gbrTU0". Those must all survive.
 NB = '&amp;nbsp;'
-BR_WORDS = ('browserless', 'browser', 'browsers', 'browsable', 'browse', 'browsing',
-            'browsed', 'bridge', 'bridges', 'breaking', 'brilliant', 'brief', 'briefly',
-            'brand', 'branch')
-_BR_START     = re.compile(r'^(?:br)+(?![a-z])')
+# A letter or digit straight after "br" means it is part of a word or name ("br0",
+# "broker"), so only strip it when something else follows. The one exception is a
+# line-initial "br" run straight into a lowercase word ("brthe next line"): no English
+# word starts "br" + consonant, so that case is litter, while "br" + vowel ("broker",
+# "bring", "brand") is always left alone -- mangling real text is worse than leaving a
+# stray "br" in front of a word that happens to start with a vowel.
+_BR_START     = re.compile(r'^(?:br)+(?![a-z0-9])')
 _BR_BEFORE_NB = re.compile(r'(?:br)+(?=' + re.escape(NB) + r')')
-_BR_AFTER_NB  = re.compile(r'(?<=' + re.escape(NB) + r')(?:br)+')
-_BR_LINE      = re.compile(r'(?<=\n)(?:br)+(?![a-z])')
+_BR_AFTER_NB  = re.compile(r'(?<=' + re.escape(NB) + r')(?:br)+(?![a-z0-9])')
+_BR_LINE      = re.compile(r'(?<=\n)(?:br)+(?![a-z0-9])')
 _BR_INLINE    = re.compile(r'(?<=[a-z.,;:)])(?:br)+(?=[A-Z])')
 _BR_SLASH     = re.compile(r'(?<=[.,;:)])(?:br)+\s*/(?![a-zA-Z])(\s?)')
-_BR_LINE_LC   = re.compile(r'(?:(?<=\n)|^)(?:br)+(?=[a-z])')
+_BR_LINE_LC   = re.compile(r'(?:(?<=\n)|^)(?:br)+(?=[b-df-hj-np-tv-xz])')
 _NB_RUN       = re.compile(r'(?:' + re.escape(NB) + r')+')
-
-def _line_lc(m, text):
-    """Line-initial "br" before a lowercase word: litter, unless the word really
-    does start with "br" (a line beginning "browserless is a web-service...")."""
-    tail = re.match(r'[a-z]+', text[m.end():])
-    word = (m.group(0) + (tail.group(0) if tail else '')).lower()
-    return m.group(0) if word.startswith(BR_WORDS) else ''
 
 def strip_br_litter(t):
     if not t or ('br' not in t and NB not in t):
@@ -247,10 +246,7 @@ def strip_br_litter(t):
     t = _BR_INLINE.sub('\n', t)                       # a <br> joining two sentences
     # "br/" after punctuation: drop it if a real newline already follows, else become one
     t = _BR_SLASH.sub(lambda m: m.group(1) if m.group(1) in ('\r', '\n') else '\n', t)
-    out, last = [], 0
-    for m in _BR_LINE_LC.finditer(t):
-        out.append(t[last:m.start()]); out.append(_line_lc(m, t)); last = m.end()
-    out.append(t[last:]); t = ''.join(out)
+    t = _BR_LINE_LC.sub('', t)
     t = _NB_RUN.sub('', t)                             # fake indentation, always leading
     return t
 
@@ -343,7 +339,9 @@ def set_valkey_healthcheck(repo, name, extra, configs):
     """Valkey containers get an authenticated check when a non-empty VALKEY_PASSWORD
     is set, and a plain unauthenticated one otherwise. The authenticated form names
     that exact variable, so using it without the variable would silently fail."""
-    if not VALKEY_REPO.search((repo or '') + ' ' + (name or '')):
+    # Repository only, never the container Name: a "*-Valkey" container running a redis
+    # image has no valkey-cli, so a name match would leave it permanently unhealthy.
+    if not VALKEY_REPO.search(repo or ''):
         return extra, False, None
     has_pw = any((c.get('Target') or '') == 'VALKEY_PASSWORD' and (c.text or '').strip()
                  for c in configs)
@@ -480,7 +478,7 @@ def build_healthcheck(fname, repo, name, webui, extra, configs):
     declared = {c.get('Target') for c in configs if c.get('Type') == 'Port'}
     if port not in declared:
         return extra, 'port-not-declared'
-    if SERVARR.search(base) or SERVARR.search(name or ''):
+    if SERVARR.search(base):                  # repository only, as for Bazarr/Valkey
         cmd, kind = f"curl -fSs http://localhost:{port}/ping || exit 1", 'servarr'
     elif port == '32400' and 'plex' in base.lower():
         cmd, kind = ("curl --connect-timeout 15 --silent --show-error --fail "
@@ -520,6 +518,10 @@ def tidy_overview(s):
 
 PORT_DESC_OK = re.compile(r'^[^.]*\.?$')
 
+# Every access mode Unraid's Path dropdown offers. Anything else falls back to rw, so
+# a read-only option missing from this set would silently become writable.
+PATH_MODES = {'rw', 'ro', 'rw,slave', 'ro,slave', 'rw,shared', 'ro,shared'}
+
 stats = defaultdict(int)
 masked_report, renamed_report = [], []
 
@@ -535,6 +537,13 @@ def process(path):
             continue
         if e.tag in DROP_ELEMS:
             stats['dropped_elems'] += 1
+            continue
+        if len(e) or e.attrib:
+            # Nested blocks (v1-style <Networking>, <Environment>, <Data>) or attributes:
+            # this script only understands flat text, so keep the element verbatim
+            # rather than flattening it to its text and losing everything inside.
+            scalars[e.tag] = e
+            stats['kept_verbatim'] += 1
             continue
         txt = e.text or ''
         if e.tag in ('Overview', 'Requires', 'DonateText'):
@@ -556,20 +565,26 @@ def process(path):
         scalars['Network'] = nf[1]
         stats['network_fixed'] += 1
 
+    # docker run refuses --no-healthcheck alongside any --health-* flag, so a template
+    # that has deliberately disabled its healthcheck must not be given one.
+    no_hc = '--no-healthcheck' in (scalars.get('ExtraParams') or '')
+    if no_hc:
+        stats['hc_skipped_disabled'] += 1
+
     newep, changed = set_pg_healthcheck(scalars.get('Repository',''), scalars.get('ExtraParams',''))
-    if changed:
+    if changed and not no_hc:
         scalars['ExtraParams'] = newep
         stats['pg_healthcheck_set'] += 1
 
     newep, changed = set_browserless_healthcheck(scalars.get('Repository',''),
                                                  scalars.get('ExtraParams',''), root.findall('Config'))
-    if changed:
+    if changed and not no_hc:
         scalars['ExtraParams'] = newep
         stats['browserless_healthcheck_set'] += 1
 
     newep, changed = set_bazarr_healthcheck(scalars.get('Repository',''), scalars.get('Name',''),
                                             scalars.get('ExtraParams',''), root.findall('Config'))
-    if changed:
+    if changed and not no_hc:
         scalars['ExtraParams'] = newep
         stats['bazarr_healthcheck_set'] += 1
 
@@ -580,14 +595,16 @@ def process(path):
 
     newep, changed, vk_pw = set_valkey_healthcheck(scalars.get('Repository',''), scalars.get('Name',''),
                                                   scalars.get('ExtraParams',''), root.findall('Config'))
-    if changed:
+    if changed and not no_hc:
         scalars['ExtraParams'] = newep
         stats['valkey_healthcheck_authed' if vk_pw else 'valkey_healthcheck_plain'] += 1
 
     newep, kind = build_healthcheck(fname, scalars.get('Repository',''), scalars.get('Name',''),
                                     scalars.get('WebUI',''), scalars.get('ExtraParams',''),
                                     root.findall('Config'))
-    if kind in ('servarr', 'plex', 'generic'):
+    if no_hc:
+        pass
+    elif kind in ('servarr', 'plex', 'generic'):
         scalars['ExtraParams'] = newep
         stats['hc_' + kind] += 1
     elif kind:
@@ -643,7 +660,7 @@ def process(path):
             if mode: stats['mode_cleared'] += 1
             newmode = ''
         elif ctype == 'Path':
-            newmode = mode if mode in ('rw','ro','rw,slave','rslave','rshared') else 'rw'
+            newmode = mode if mode in PATH_MODES else 'rw'
         elif ctype == 'Port':
             newmode = mode if mode in ('tcp','udp') else 'tcp'
         else:
@@ -721,7 +738,12 @@ def process(path):
     # --- write ---
     L = ['<?xml version="1.0"?>', f'<Container version="{root.get("version","2")}">']
     def emit(tag, txt):
-        if txt is None or txt == '':
+        if isinstance(txt, ET.Element):
+            el = copy.deepcopy(txt)
+            el.tail = None
+            ET.indent(el, space='  ', level=1)
+            L.append('  ' + ET.tostring(el, encoding='unicode'))
+        elif txt is None or txt == '':
             L.append(f'  <{tag}/>')
         else:
             L.append(f'  <{tag}>{esc_text(txt)}</{tag}>')
@@ -741,16 +763,20 @@ def process(path):
         f.write('\n'.join(L))
     stats['files'] += 1
 
-os.makedirs(DST, exist_ok=True)
-for p in sorted(glob.glob(os.path.join(SRC, '*.xml'))):
-    try:
-        process(p)
-    except Exception as e:
-        print(f"!! FAILED {os.path.basename(p)}: {e}", file=sys.stderr)
-        stats['failed'] += 1
+def main():
+    os.makedirs(DST, exist_ok=True)
+    for p in sorted(glob.glob(os.path.join(SRC, '*.xml'))):
+        try:
+            process(p)
+        except Exception as e:
+            print(f"!! FAILED {os.path.basename(p)}: {e}", file=sys.stderr)
+            stats['failed'] += 1
 
-print(json.dumps(dict(stats), indent=2))
-with open(os.path.join(DST, '_report-masked.txt'),'w') as f:
-    for r in masked_report: f.write(' | '.join(r)+'\n')
-with open(os.path.join(DST, '_report-renamed.txt'),'w') as f:
-    for r in renamed_report: f.write(' | '.join(r)+'\n')
+    print(json.dumps(dict(stats), indent=2))
+    with open(os.path.join(DST, '_report-masked.txt'), 'w', encoding='utf-8') as f:
+        for r in masked_report: f.write(' | '.join(r)+'\n')
+    with open(os.path.join(DST, '_report-renamed.txt'), 'w', encoding='utf-8') as f:
+        for r in renamed_report: f.write(' | '.join(r)+'\n')
+
+if __name__ == '__main__':
+    main()

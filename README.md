@@ -46,7 +46,8 @@ A JSON summary of every change is printed to stdout, plus two reports written to
 
 **Structure** — elements emitted in Unraid's canonical order; `<Config>` attributes in
 the order `Name, Target, Default, Mode, Description, Type, Display, Required, Mask`.
-`<DateInstalled>` and `<MyMAC>` dropped, `<MyIP>` kept. `<Overview>` whitespace
+`<DateInstalled>` and `<MyMAC>` dropped, `<MyIP>` kept. Elements with children or attributes
+(v1-style `<Networking>`, `<Environment>`, `<Data>`) are kept verbatim. `<Overview>` whitespace
 collapsed.
 
 **Config blocks** — reordered to Ports, Paths, Devices, Variables, Labels, with
@@ -75,7 +76,9 @@ images that define their own `HEALTHCHECK` (passing `--health-cmd` on `docker ru
 overrides the image's built-in one). Purpose-built checks for Postgres/pgvector, Valkey
 (authenticated when `VALKEY_PASSWORD` is set), Bazarr (`/api/system/ping`, not `/ping`),
 browserless (`/pressure`), Servarr apps (`/ping`) and Plex (`/identity`), with a generic
-HTTP check otherwise.
+HTTP check otherwise. Checks are matched on the image repository, never the container
+name, and a template with `--no-healthcheck` is left alone (docker refuses to combine it
+with `--health-*` flags).
 
 One subtlety worth knowing if you write your own: Unraid interpolates `ExtraParams` into
 the docker command raw and runs it through `/bin/sh`, so a **double**-quoted
@@ -91,6 +94,12 @@ worked examples of the pattern — each override names the
 expected current value, so it stops matching rather than clobbering data if the source
 changes upstream. Delete them or replace them with your own; they simply don't fire on
 filenames you don't have.
+
+## Tests
+
+```bash
+python3 -m unittest discover -s tests
+```
 
 ## Licence
 
