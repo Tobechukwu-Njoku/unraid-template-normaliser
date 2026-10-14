@@ -418,14 +418,25 @@ VALUE_OVERRIDES = {
 #   Dozzle     selfhosters          -> no <Privileged> element at all (defaults false)
 #   Beszel     JamsRepos            -> false
 #   NPM        mgutt                -> false
+# Upstream sets these true, but nothing in them needs it -- checked their startup
+# scripts for mount/modprobe/sysctl/iptables/mknod, and none of the official compose
+# files use privileged:
+#   Authentik  server only; the worker, which manages outposts, was never privileged
+#   PhantomBot, Krusader  (Krusader's /mnt mounts are plain bind mounts)
+#   ownCloud   dlandon's 30_redis_server.sh runs `sysctl -w vm.overcommit_memory=1` and
+#              disables transparent hugepages -- host-wide settings while privileged;
+#              unprivileged those lines just fail and Redis starts anyway
 # Left privileged deliberately: DiskSpeed and Scrutiny genuinely need raw device access
-# (Scrutiny also mounts /run/udev and /dev/disk read-only for SMART), and Authentik,
-# PhantomBot, Krusader and ownCloud are set true by their own upstream templates.
+# (Scrutiny also mounts /run/udev and /dev/disk read-only for SMART).
 UNPRIVILEGE = {
     'my-Dev-DL-Duplicati.xml',
     'my-Dev-Log-Dozzle.xml',
     'my-Log-Beszel.xml',
     'my-Net-NPM.xml',
+    'my-Authentik-Authentik.xml',
+    'my-Bot-PhantomBot.xml',
+    'my-Tool-Krusader.xml',
+    'my-ownCloud-ownCloud.xml',
 }
 
 def apply_override(fname, ctype, target, value):
