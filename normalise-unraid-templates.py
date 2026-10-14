@@ -275,8 +275,12 @@ def dedupe_names(recs):
 # escapeshellarg) and runs it via popen() -> /bin/sh. So a double-quoted --health-cmd
 # gets $POSTGRES_USER expanded on the HOST, where it is empty. Single quotes defer
 # expansion to the container, which is where the variable actually exists.
+# With POSTGRES_DB unset, `-d $POSTGRES_DB` became a bare `-d` and every check failed
+# with "option requires an argument", so fall back the way the image itself does
+# (database = user, user = postgres).
 PG_REPO = re.compile(r'postgres|pgvector', re.I)
-PG_HEALTHCHECK = ("--health-cmd='pg_isready -U $POSTGRES_USER -d $POSTGRES_DB' "
+PG_HEALTHCHECK = ("--health-cmd='pg_isready -U \"${POSTGRES_USER:-postgres}\" "
+                  "-d \"${POSTGRES_DB:-${POSTGRES_USER:-postgres}}\"' "
                   "--health-interval=60s --health-start-period=30s")
 _HEALTH_FLAG = re.compile(
     r"""--health-[a-z-]+=(?:"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|\S+)\s*""")
@@ -465,32 +469,59 @@ WEBUI_PORT = re.compile(r'\[PORT:(\d+)\]')
 # button pointed at nothing. The image's own healthcheck confirms 8080 is the web port.
 WEBUI_FIX = {'my-Silo-Silo.xml': ('http://[IP]:[PORT:8090]', 'http://[IP]:[PORT:8080]')}
 
+# Images with no /bin/sh. `docker run --health-cmd` always produces the CMD-SHELL form,
+# so no check passed that way can run in them and Docker reports unhealthy forever.
+# (beszel and dozzle do ship `health`/`healthcheck` subcommands, but calling them needs
+# the exec form, which only a Dockerfile or compose file can express.) Any check found
+# on these is removed.
+NO_SHELL = {'henrygd/beszel', 'amir20/dozzle'}
+
+# Recognises the generic check this script writes, so a corrected version replaces an
+# older one on the next run instead of being kept as if it were hand-written.
+GENERIC_MARK = re.compile(r"--health-cmd='curl -sS -o /dev/null --max-time 5 http://localhost:(\d+)/ ")
+
 def build_healthcheck(fname, repo, name, webui, extra, configs):
     """Add a healthcheck only where there is none, the image defines none, and the
-    WebUI port is a port the container actually declares."""
-    if '--health-cmd' in (extra or ''):
-        return extra, None
+    WebUI port is a port the container actually declares. A generic check written by
+    an earlier run is rebuilt on its existing port."""
     base = (repo or '').split(':')[0]
+    if base in NO_SHELL:
+        return strip_health(extra), 'no-shell'
+    own = GENERIC_MARK.search(extra or '')
+    if '--health-cmd' in (extra or '') and not own:
+        return extra, None
     if base in BUILTIN_HEALTHCHECK:
         return extra, 'builtin'
-    m = WEBUI_PORT.search(webui or '')
-    if not m:
-        return extra, 'no-webui-port'
-    port = m.group(1)
-    declared = {c.get('Target') for c in configs if c.get('Type') == 'Port'}
-    if port not in declared:
-        return extra, 'port-not-declared'
-    if SERVARR.search(base) or SERVARR.search(name or ''):
+    if own:
+        port = own.group(1)
+    else:
+        m = WEBUI_PORT.search(webui or '')
+        if not m:
+            return extra, 'no-webui-port'
+        port = m.group(1)
+        declared = {c.get('Target') for c in configs if c.get('Type') == 'Port'}
+        if port not in declared:
+            return extra, 'port-not-declared'
+    if not own and (SERVARR.search(base) or SERVARR.search(name or '')):
         cmd, kind = f"curl -fSs http://localhost:{port}/ping || exit 1", 'servarr'
-    elif port == '32400' and 'plex' in base.lower():
+    elif not own and port == '32400' and 'plex' in base.lower():
         cmd, kind = ("curl --connect-timeout 15 --silent --show-error --fail "
                      "http://localhost:32400/identity || exit 1"), 'plex'
     else:
         # Deliberately no curl -f: many apps answer / with 401/403 when auth is on, and
         # a false "unhealthy" is worse than a slightly weaker check. This proves the app
-        # is listening and speaking HTTP. wget covers images that ship no curl.
+        # is listening and speaking HTTP. wget covers images that ship no curl:
+        #   * it gets 127.0.0.1, not localhost -- curl falls back from ::1 to IPv4 but
+        #     busybox wget does not, so IPv4-only apps refused it;
+        #   * success is "a status line came back", not wget's exit code, which is
+        #     non-zero on any 4xx/5xx and turned a 401 login page into "down".
+        # bash's /dev/tcp is the last resort for images with neither (node/.NET apps);
+        # it only proves the port is open. It is opened with `3>`, not `3<>`: Unraid's
+        # xmlSecurity() deletes every < and > from any template value that strip_tags()
+        # would change, so a single `<` would also mangle the `2>&1` (a lone > survives).
         cmd, kind = (f"curl -sS -o /dev/null --max-time 5 http://localhost:{port}/ "
-                     f"|| wget -q -T 5 -O /dev/null http://localhost:{port}/ || exit 1"), 'generic'
+                     f"|| wget -S -T 5 -O /dev/null http://127.0.0.1:{port}/ 2>&1 | grep -q HTTP/ "
+                     f'|| bash -c "exec 3>/dev/tcp/127.0.0.1/{port}" || exit 1'), 'generic'
     hc = f"--health-cmd='{cmd}' --health-interval=60s --health-start-period=30s"
     rest = strip_health(extra)
     return ((rest + ' ' + hc).strip() if rest else hc), kind
@@ -587,9 +618,9 @@ def process(path):
     newep, kind = build_healthcheck(fname, scalars.get('Repository',''), scalars.get('Name',''),
                                     scalars.get('WebUI',''), scalars.get('ExtraParams',''),
                                     root.findall('Config'))
-    if kind in ('servarr', 'plex', 'generic'):
+    if kind in ('servarr', 'plex', 'generic', 'no-shell'):
         scalars['ExtraParams'] = newep
-        stats['hc_' + kind] += 1
+        stats['hc_' + kind.replace('-', '_')] += 1
     elif kind:
         stats['hc_skipped_' + kind.replace('-', '_')] += 1
 

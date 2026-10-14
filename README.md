@@ -75,12 +75,18 @@ images that define their own `HEALTHCHECK` (passing `--health-cmd` on `docker ru
 overrides the image's built-in one). Purpose-built checks for Postgres/pgvector, Valkey
 (authenticated when `VALKEY_PASSWORD` is set), Bazarr (`/api/system/ping`, not `/ping`),
 browserless (`/pressure`), Servarr apps (`/ping`) and Plex (`/identity`), with a generic
-HTTP check otherwise.
+HTTP check otherwise. The generic check tries curl, then wget (on `127.0.0.1`, passing on
+any HTTP status so a 401 login page isn't "down"), then bash's `/dev/tcp` for images with
+neither. A generic check written by an earlier run is rebuilt, so fixes reach templates
+that already have one. Images with no `/bin/sh` (beszel, dozzle) get no check at all,
+because `--health-cmd` always runs through a shell.
 
 One subtlety worth knowing if you write your own: Unraid interpolates `ExtraParams` into
 the docker command raw and runs it through `/bin/sh`, so a **double**-quoted
 `--health-cmd` gets `$POSTGRES_USER` expanded on the host, where it's empty. Single
-quotes defer expansion to the container.
+quotes defer expansion to the container. And keep `<` out of it: Unraid's `xmlSecurity()`
+deletes every `<` and `>` from any template value that looks like it contains a tag, so
+`exec 3<>/dev/tcp/...` silently turns `2>&1` into `2&1` as well.
 
 ## Site-specific overrides
 
